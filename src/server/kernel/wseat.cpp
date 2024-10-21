@@ -19,6 +19,7 @@
 #include <qwcompositor.h>
 #include <qwdisplay.h>
 #include <qwprimaryselection.h>
+#include <qwdatadevice.h>
 
 #include <QQuickWindow>
 #include <QGuiApplication>
@@ -482,6 +483,10 @@ void WSeatPrivate::on_start_drag(wlr_drag *drag)
             dragSurface->safeDeleteLater();
         dragSurface = wsurface;
         Q_EMIT q->requestDrag(dragSurface.get());
+
+        QObject::connect(qw_drag::from(drag), &qw_drag::notify_drop, q, [this, q]{
+            Q_EMIT q->dropped();
+        });
     }
 }
 void WSeatPrivate::handleKeyEvent(QKeyEvent &e)

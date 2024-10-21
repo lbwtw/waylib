@@ -105,6 +105,7 @@ Q_SIGNALS:
     void requestCursorShape(WAYLIB_SERVER_NAMESPACE::WGlobal::CursorShape shape);
     void requestCursorSurface(WAYLIB_SERVER_NAMESPACE::WSurface *surface, const QPoint &hotspot);
     void requestDrag(WAYLIB_SERVER_NAMESPACE::WSurface *surface);
+    void dropped();
 
 protected:
     using QObject::eventFilter;
