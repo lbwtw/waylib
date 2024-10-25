@@ -29,6 +29,8 @@ pkg_search_module(PIXMAN REQUIRED IMPORTED_TARGET pixman-1)
 pkg_search_module(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 pkg_search_module(XCB REQUIRED IMPORTED_TARGET xcb)
 pkg_search_module(EGL REQUIRED IMPORTED_TARGET egl)
+pkg_search_module(LIBINPUT REQUIRED IMPORTED_TARGET libinput)
+pkg_search_module(LIBUDEV REQUIRED IMPORTED_TARGET libudev)
 
 ws_generate(
     server
@@ -312,6 +314,8 @@ target_link_libraries(${TARGET}
     PkgConfig::XKBCOMMON
     PkgConfig::XCB
     PkgConfig::EGL
+    PkgConfig::LIBINPUT
+    PkgConfig::LIBUDEV
 )
 
 target_link_libraries(${TARGET}

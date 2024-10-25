@@ -13,6 +13,9 @@
 #include "winputdevice.h"
 #include "types.h"
 
+#include <libinput.h>
+#include <libudev.h>
+
 #include <qwoutput.h>
 #include <qwrenderer.h>
 #include <qwinputdevice.h>
@@ -45,6 +48,9 @@ extern "C" {
 #define static
 #include <wlr/render/gles2.h>
 #undef static
+#include <wlr/types/wlr_input_device.h>
+#include <wlr/backend/libinput.h>
+#include <wlr/types/wlr_pointer.h>
 }
 
 #endif // QT_NO_OPENGL
@@ -160,10 +166,26 @@ QPointer<QInputDevice> QWlrootsIntegration::addInputDevice(WInputDevice *device,
         break;
     }
     case WLR_INPUT_DEVICE_POINTER: {
-        qtdev = new QPointingDevice(name, systemId, QInputDevice::DeviceType::TouchPad, QPointingDevice::PointerType::Generic,
+        auto mouse = wlr_pointer_from_input_device(qwDevice->handle());
+        // Fix: maxPoints and buttonCount error(Magic Number), In higher versions of wlroots, wlr_pointer.buttons and wlr_pointer.buttonCount exists.
+        if (wlr_input_device_is_libinput(qwDevice->handle())) {
+            auto inputDevice = wlr_libinput_get_device_handle(qwDevice->handle());
+            Q_ASSERT(inputDevice);
+            struct udev_device *udevDevice = libinput_device_get_udev_device(inputDevice);
+            Q_ASSERT(udevDevice);
+            if (udev_device_get_property_value(udevDevice, "ID_INPUT_TOUCHPAD")) {
+                qtdev = new QPointingDevice(name, systemId, QInputDevice::DeviceType::TouchPad, QPointingDevice::PointerType::Generic,
+                                            QInputDevice::Capability::Position | QInputDevice::Capability::Hover
+                                                | QInputDevice::Capability::Scroll,
+                                            10, 32, seatName, QPointingDeviceUniqueId());
+                break;
+            }
+        }
+
+        qtdev = new QPointingDevice(name, systemId, QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
                                     QInputDevice::Capability::Position | QInputDevice::Capability::Hover
                                         | QInputDevice::Capability::Scroll | QInputDevice::Capability::MouseEmulation,
-                                    10, 32, seatName, QPointingDeviceUniqueId());
+                                    1, 5, seatName, QPointingDeviceUniqueId());
         break;
     }
     case WLR_INPUT_DEVICE_TOUCH: {
